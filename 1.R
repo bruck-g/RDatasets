@@ -97,6 +97,63 @@ print(paste("Accuracy:", accuracy))
 
 
 
+#_______________________________________________________________________________
+
+
+library(dplyr) # For data manipulation
+
+
+artists <- read_csv("/Users/yourdirectory/random.csv")
+collaborations <- read_csv("/Users/yourdirectory/random.csv")
+
+jbalvin_collabs <- filter(artists, artist == "J Balvin")$collab_songs
+
+jbalvin_genres <- artists %>%
+  filter(artist == "J Balvin") %>%
+  select(genres) %>%
+  distinct()
+
+
+jbalvin_genre_list <- strsplit(as.character(jbalvin_genres$genres), ", ") %>%
+  unlist() %>%
+  table() %>%
+  as.data.frame()
+
+names(jbalvin_genre_list) <- c("Genre", "Count")
+
+ggplot(jbalvin_genre_list, aes(x=reorder(Genre, -Count), y=Count, fill=Genre)) +
+  geom_bar(stat="identity") +
+  theme_minimal() +
+  labs(title="Genre Diversity in J Balvin's Collaborations", x="Genre", y="Count") +
+  coord_flip()
+
+jbalvin_collab_artists <- collaborations %>%
+  filter(artist1 == "J Balvin" | artist2 == "J Balvin") %>%
+  mutate(collaborated_artist = ifelse(artist1 == "J Balvin", artist2, artist1)) %>%
+  select(collaborated_artist) %>%
+  distinct() %>%
+  nrow()
+
+print(paste("Unique artists J Balvin has collaborated with:", jbalvin_collab_artists))
+
+
+
+collab_countries <- artists %>%
+  filter(collab_songs > 0 & artist != "J Balvin") %>%
+  group_by(country) %>%
+  summarise(TotalCollabs = sum(collab_songs)) %>%
+  arrange(desc(TotalCollabs))
+
+ggplot(collab_countries, aes(x=reorder(country, -TotalCollabs), y=TotalCollabs)) +
+  geom_bar(stat="identity", fill="steelblue") +
+  theme_minimal() +
+  labs(title="Global Music Collaborations by Country", x="", y="Total Collaborations") +
+  coord_flip()
+
+
+
+
+
 
 
 
